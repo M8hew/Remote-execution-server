@@ -79,7 +79,7 @@ void *thread_io(void *fd_ptr) {
 
 // host service
 int main(int argc, char **argv) {
-    if (argc < 2) {
+    if (argc < 3) {
         fprintf(stderr, "not enough arguments were given\n");
         return 1;
     }
@@ -96,7 +96,17 @@ int main(int argc, char **argv) {
         fprintf(stderr, "error creating connection\n");
         return 1;
     }
+
     // passing arguments to server
+    if (strcmp("spawn", argv[2]) == 0) {
+        dprintf(sockfd, "%d %d ", SPAWN, argc - 3);
+        for (int i = 3; i < argc; ++i) {
+            dprintf(sockfd, "%s ", argv[i]);
+        }
+    } else {
+        fprintf(stderr, "invalid args were provided\n");
+        return 1;
+    }
 
     // create thread to read from server and print to stdout
     // stdin  -> socket : main

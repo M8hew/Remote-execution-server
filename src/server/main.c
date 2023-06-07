@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 #include "../config.h"
+#include "logger.h"
 
 enum {
     ARG_SZ = 1024,
@@ -51,12 +52,22 @@ int create_listener(char *service) {
     return sock;
 }
 
+void handler(int arg) {
+    (void)arg;
+    save_log();
+}
+
 // port
 int main(int argc, char *argv[]) {
     if (argc < 2) {
         fprintf(stderr, "Not enough args were provided\n");
         return 1;
     }
+
+    init_logger();
+    signal(SIGINT, handler);
+    signal(SIGKILL, handler);
+    signal(SIGTERM, handler);
 
     if (daemon(1, 0) != 0) {
         fprintf(stderr, "Error occured becoming a daemon\n");
@@ -70,9 +81,16 @@ int main(int argc, char *argv[]) {
 
     int connection;
     while (connection = accept(sock, NULL, NULL)) {
+        sid cur_ses_id = get_id();
+
+        add_log(cur_ses_id, SES_CREATE);
+
         pid_t pid = fork();
         if (pid < 0) {
             fprintf(stderr, "Error occured while creating proxy-process\n");
+
+            add_log(cur_ses_id, SES_ERROR);
+
             return 1;
         }
         if (pid == 0) {
@@ -103,8 +121,11 @@ int main(int argc, char *argv[]) {
         }
         close(connection);
         waitpid(pid, NULL, 0);
+
+        add_log(cur_ses_id, SES_END);
     }
 
+    save_log();
     close(sock);
     return 0;
 }
