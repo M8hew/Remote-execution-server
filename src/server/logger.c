@@ -14,7 +14,8 @@ void init_logger() {
     server_log = fopen(log_filename, "ab+");
 
     time(&cur_time);
-    fprintf(server_log, "%lld    start\n", (long long)cur_time);
+    fprintf(server_log, "%lld\t%d\t%d\n", (long long)cur_time, SERV_LOG,
+            SERV_START);
     fflush(server_log);
 }
 
@@ -24,14 +25,15 @@ void add_log(sid ses_id, int action) {
     }
 
     time(&cur_time);
-    fprintf(server_log, "%lld    %d    %llu\n", (long long)cur_time, action,
+    fprintf(server_log, "%lld\t%d\t%llu\n", (long long)cur_time, action,
             ses_id);
     fflush(server_log);
 }
 
 void save_log() {
     time(&cur_time);
-    fprintf(server_log, "%lld    stop\n", (long long)cur_time);
+    fprintf(server_log, "%lld\t%d\t%d\n", (long long)cur_time, SERV_LOG,
+            SERV_STOP);
     fclose(server_log);
 }
 

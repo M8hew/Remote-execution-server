@@ -1,4 +1,4 @@
-typedef unsigned long long sid;
+typedef long long unsigned sid;
 
 void init_logger();
 
